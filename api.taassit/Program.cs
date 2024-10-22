@@ -1,3 +1,5 @@
+using Api.TaAssistant.Configuration;
+using Api.TaAssistant.Middleware;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using Autofac;
@@ -11,8 +13,6 @@ using Serilog.Events;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Api.TaAssistant.Configuration;
-using Us.Api.Ochlocracy.Middleware;
 using TaAssistant.Model;
 using TaAssistant.Model.Api;
 using TaAssistant.Model.Exceptions;
@@ -47,7 +47,7 @@ builder.Logging.AddSerilog();
 builder.Services.AddLazyCache();
 builder.Services.AddMediatR(cfg =>
 {
-    //cfg.RegisterServicesFromAssemblies([typeof(ValidationBehavior<,>).Assembly, typeof(DummyHandler).Assembly,]);
+    cfg.RegisterServicesFromAssemblies([typeof(ValidationBehavior<,>).Assembly, typeof(DummyHandler).Assembly,]);
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 builder.Services

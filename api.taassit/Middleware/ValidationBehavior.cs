@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 
-namespace Us.Api.Ochlocracy.Middleware
+namespace Api.TaAssistant.Middleware
 {
     /// <summary>
     /// A pipeline used to handle verification.

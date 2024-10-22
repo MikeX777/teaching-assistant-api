@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TaAssistant.Model.Api;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 
-namespace Us.Api.Ochlocracy.Abstractions
+namespace Api.TaAssistant.Abstractions
 {
     /// <summary>
     /// A base controller used to share the respond logic.

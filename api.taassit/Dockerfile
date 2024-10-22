@@ -10,6 +10,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["api.taassit/api.taassit.csproj", "api.taassit/"]
+COPY ["taassist.model/taassist.model.csproj", "taassist.model/"]
+COPY ["taassit.service/taassist.service.csproj", "taassist.service/"]
 RUN dotnet restore "./api.taassit/api.taassit.csproj"
 COPY . .
 WORKDIR "/src/api.taassit"
