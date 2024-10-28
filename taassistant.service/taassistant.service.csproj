@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\taassit.model\taassit.model.csproj" />
+    <ProjectReference Include="..\taassistant.model\taassistant.model.csproj" />
   </ItemGroup>
 
 </Project>

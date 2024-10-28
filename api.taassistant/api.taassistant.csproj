@@ -8,6 +8,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageId>Api.TaAssistant</PackageId>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,7 +38,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\taassistant.service\taassistant.service.csproj" />
-    <ProjectReference Include="..\taassit.model\taassit.model.csproj" />
+    <ProjectReference Include="..\taassistant.model\taassistant.model.csproj" />
   </ItemGroup>
 
 </Project>
