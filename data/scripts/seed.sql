@@ -1,36 +1,46 @@
-create database ochlocracy;
+create database taassistant;
+
+create table user_types (
+  user_type_id serial primary key,
+  type varchar(50) not null
+);
 
 create table users (
   user_id bigserial primary key,
-  username varchar(320) not null,
+  email varchar(320) not null,
   given_name varchar(50) not null,
   family_name varchar(50) not null,
+  password varchar(320) not null,
+  password_salt varchar(320) not null,
+  cv_name varchar(320) not null,
+  user_type_id serial references user_types (user_type_id),
   created_at timestamp default now()
 );
 
-create table bill_reactions (
-  bill_reaction_id bigserial primary key,
-  bill_number varchar(50) not null,
-  user_id bigserial references users (user_id),
-  explanation varchar(5000) null,
-  opinion varchar(5000) null,
-  score integer default 0
+create table courses (
+  course_id bigserial primary key,
+  prefix varchar(15) not null,
+  code integer not null,
+  require_ta boolean not null
 );
 
-insert into users (username, given_name, family_name) values
-  ('test@test.com', 'michael', 'cuomo');
+create table messages (
+  message_id bigserial primary key,
+  sender_user_id bigserial references users (user_id),
+  receiver_user_id bigserial references users (user_id),
+  message_text text not null,
+  created_at timestamp default now()
+);
+
+insert into user_types (type) values
+('Admin'),
+('Teaching Assistant'),
+('Committee Member'),
+('Instructor');
 
 
 do $$
-declare u_id bigint;
 begin
-  u_id := (select u.user_id from users u where u.username = 'test@test.com' limit 1);
-
-  insert into bill_reactions (bill_number, user_id, explanation, opinion, score) values
-    ('bill_number_1', u_id, 'explanation 1', 'opinion 1', 0),
-    ('bill_number_1', u_id, 'explanation 2', 'opinion 3', 0),
-    ('bill_number_1', u_id, 'explanation 3', 'opinion 3', 0),
-    ('bill_number_2', u_id, 'explanation 2', 'opinion 2', 0);
 end 
 $$
 

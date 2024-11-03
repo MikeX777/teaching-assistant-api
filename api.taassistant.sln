@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "taassistant.model", "taassi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "taassistant.service", "taassistant.service\taassistant.service.csproj", "{28886D03-451B-4071-B463-543A6954F192}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taassistant.data", "taassistant.data\taassistant.data.csproj", "{D2266AFC-024F-46A8-9692-12AB33026D40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "taassistant.data", "taassistant.data\taassistant.data.csproj", "{D2266AFC-024F-46A8-9692-12AB33026D40}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{38F54043-A3C1-4833-9C5A-96F1B1C9FF43}"
 EndProject
@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		data\scripts\seed.sql = data\scripts\seed.sql
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taassistant.interfaces", "..\taassistant.interfaces\taassistant.interfaces.csproj", "{08888ED9-F867-4D29-A97A-C3A648C9915E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +46,10 @@ Global
 		{38F54043-A3C1-4833-9C5A-96F1B1C9FF43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38F54043-A3C1-4833-9C5A-96F1B1C9FF43}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38F54043-A3C1-4833-9C5A-96F1B1C9FF43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08888ED9-F867-4D29-A97A-C3A648C9915E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08888ED9-F867-4D29-A97A-C3A648C9915E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08888ED9-F867-4D29-A97A-C3A648C9915E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08888ED9-F867-4D29-A97A-C3A648C9915E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

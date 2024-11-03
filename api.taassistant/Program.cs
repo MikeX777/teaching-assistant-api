@@ -8,11 +8,15 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Data;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using TaAssistant.Data.Repositories;
+using TaAssistant.Interfaces.Repositories;
 using TaAssistant.Model;
 using TaAssistant.Model.Api;
 using TaAssistant.Model.Exceptions;
@@ -186,8 +190,15 @@ app.Run();
 
 void ConfigureContainer(ContainerBuilder containerBuilder)
 {
+    Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+    var connectionString =
+        "User ID=postgres;Password=password;Server=host.docker.internal;Port=8007;Database=postgres;Pooling=true;";
     containerBuilder.RegisterInstance(application);
     containerBuilder.RegisterInstance(Log.Logger);
+    containerBuilder.Register((_, _) => new NpgsqlConnection(connectionString)).As<IDbConnection>()
+        .InstancePerLifetimeScope();
+    containerBuilder.Register<IUserTypeRepository>((c, _) => new UserTypeRepository(c.Resolve<IDbConnection>()));
+
 }
 
 /// <summary>

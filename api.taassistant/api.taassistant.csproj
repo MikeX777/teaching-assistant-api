@@ -16,6 +16,7 @@
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
     <PackageReference Include="Autofac" Version="8.1.1" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="FluentValidation" Version="11.10.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.10.0" />
@@ -27,6 +28,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.10" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Npgsql" Version="8.0.3" />
     <PackageReference Include="Serilog" Version="4.0.2" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
@@ -37,6 +39,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\taassistant.interfaces\taassistant.interfaces.csproj" />
+    <ProjectReference Include="..\taassistant.data\taassistant.data.csproj" />
     <ProjectReference Include="..\taassistant.service\taassistant.service.csproj" />
     <ProjectReference Include="..\taassistant.model\taassistant.model.csproj" />
   </ItemGroup>

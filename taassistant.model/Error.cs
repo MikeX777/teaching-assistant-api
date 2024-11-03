@@ -93,13 +93,13 @@ namespace TaAssistant.Model
         /// </summary>
         Unspecified,
         /// <summary>
-        /// An error stemming from the congress api.
+        /// An error stemming from the UserTypeRepository.
         /// </summary>
-        CongressAPI,
+        UserTypeRepository,
         /// <summary>
-        /// An error stemming from the OchlocracyAPI.
+        /// An error stemming from the USerRepository.
         /// </summary>
-        OchlocracyAPI
+        UserRepository
     }
 
     /// <summary>
