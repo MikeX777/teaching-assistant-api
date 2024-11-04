@@ -103,7 +103,11 @@ namespace TaAssistant.Model
         /// <summary>
         /// An error stemming from the USerRepository.
         /// </summary>
-        UserRepository
+        UserRepository,
+        /// <summary>
+        /// An error stemming from the UserHandler.
+        /// </summary>
+        UserHandler,
     }
 
     /// <summary>
