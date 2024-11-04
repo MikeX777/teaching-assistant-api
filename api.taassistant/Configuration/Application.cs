@@ -10,5 +10,10 @@
         /// The name of the application.
         /// </summary>
         public string Name { get; set; } = configuration.GetValue<string>("Name") ?? string.Empty;
+
+        /// <summary>
+        /// The connection string for the data base.
+        /// </summary>
+        public string DefaultConnectionString { get; set; } = configuration.GetValue<string>("default-c2807") ?? string.Empty;
     }
 }

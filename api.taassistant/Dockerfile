@@ -11,6 +11,8 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["api.taassistant/api.taassistant.csproj", "api.taassistant/"]
 COPY ["taassistant.model/taassistant.model.csproj", "taassistant.model/"]
+COPY ["taassistant.interfaces/taassistant.interfaces.csproj", "taassistant.interfaces/"]
+COPY ["taassistant.data/taassistant.data.csproj", "taassistant.data/"]
 COPY ["taassistant.service/taassistant.service.csproj", "taassistant.service/"]
 RUN dotnet restore "./api.taassistant/api.taassistant.csproj"
 COPY . .

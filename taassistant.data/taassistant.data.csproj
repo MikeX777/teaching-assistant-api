@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\taassistant.interfaces\taassistant.interfaces.csproj" />
+    <ProjectReference Include="..\taassistant.interfaces\taassistant.interfaces.csproj" />
     <ProjectReference Include="..\taassistant.model\taassistant.model.csproj" />
   </ItemGroup>
 

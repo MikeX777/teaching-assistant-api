@@ -1,6 +1,6 @@
-﻿namespace TaAssistant.Model.Entities
+﻿namespace TaAssistant.Model.Api
 {
-    public class UserTypeEntity
+    public class UserTypeResponse
     {
         public int UserTypeId { get; set; }
         public string Type { get; set; } = string.Empty;
