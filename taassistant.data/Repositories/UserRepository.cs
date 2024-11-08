@@ -59,7 +59,7 @@ namespace TaAssistant.Data.Repositories
                 var userId = await connection.QuerySingleAsync<int>("SELECT u.user_id FROM users AS u WHERE u.email = @email AND u.password = @passwordHash",
                     new { email = email, passwordHash = passwordHash });
                 var verificationCode = RandomString(8);
-                await connection.ExecuteAsync("UPDATE users AS u SET u.verification_code = @verificationCode, u.verification_expiration = @verificationExpiration WHERE u.user_id = @userId",
+                await connection.ExecuteAsync("UPDATE users  SET verification_code = @verificationCode, verification_expiration = @verificationExpiration WHERE user_id = @userId",
                     new { userId = userId, verificationCode = verificationCode, verificationExpiration = DateTimeOffset.UtcNow.AddMinutes(15) });
                 return verificationCode;
             },

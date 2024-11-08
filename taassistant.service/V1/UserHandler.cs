@@ -79,7 +79,7 @@ namespace TaAssistant.Service.V1
         {
             var saltData = RandomNumberGenerator.GetBytes(64);
             request.PasswordSalt = Convert.ToBase64String(saltData);
-            request.Password = createPasswordHash(request.Password, configuration.Pepper, request.PasswordSalt);
+            request.Password = createPasswordHash(request.Password, request.PasswordSalt, configuration.Pepper);
             return request;
 
         }
