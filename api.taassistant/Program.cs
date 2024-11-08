@@ -196,10 +196,16 @@ void ConfigureContainer(ContainerBuilder containerBuilder)
     //var connectionString = configuration.GetValue<string>("default-c2807");
     Log.Error(connectionString);
     containerBuilder.RegisterInstance(application);
+    containerBuilder.RegisterInstance(new Configuration
+    {
+        EmailConnectionString = application.EmailConnectionString,
+        Pepper = application.Pepper,
+    });
     containerBuilder.RegisterInstance(Log.Logger);
     containerBuilder.Register((_, _) => new NpgsqlConnection(connectionString)).As<IDbConnection>()
         .InstancePerLifetimeScope();
     containerBuilder.Register<IUserTypeRepository>((c, _) => new UserTypeRepository(c.Resolve<IDbConnection>()));
+    containerBuilder.Register<IUserRepository>((c, _) => new UserRepository(c.Resolve<IDbConnection>()));
 
 }
 
