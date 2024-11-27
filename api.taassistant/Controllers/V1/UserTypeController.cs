@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TaAssistant.Model.Api;
+using TaAssistant.Model.Api.Responses;
 using TaAssistant.Service.V1;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 

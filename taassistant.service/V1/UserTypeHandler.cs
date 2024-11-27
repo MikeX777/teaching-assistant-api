@@ -2,6 +2,7 @@
 using MediatR;
 using TaAssistant.Interfaces.Repositories;
 using TaAssistant.Model.Api;
+using TaAssistant.Model.Api.Responses;
 
 namespace TaAssistant.Service.V1
 {

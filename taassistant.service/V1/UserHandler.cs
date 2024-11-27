@@ -8,16 +8,19 @@ using TaAssistant.Interfaces.Repositories;
 using TaAssistant.Model;
 using TaAssistant.Model.Api;
 using TaAssistant.Model.Api.Requests;
+using TaAssistant.Model.Api.Responses;
 using TaAssistant.Model.Entities;
 
 namespace TaAssistant.Service.V1
 {
     public record CreateUser(CreateUserRequest User) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
     public record SignIn(SignInRequest signIn) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
+    public record Verify(VerifyRequest verify) : IRequest<Either<ApiProblemDetails, UserResponse>> { }
 
     public class UserHandler :
         IRequestHandler<CreateUser, Either<ApiProblemDetails, LanguageExt.Unit>>,
-        IRequestHandler<SignIn, Either<ApiProblemDetails, LanguageExt.Unit>>
+        IRequestHandler<SignIn, Either<ApiProblemDetails, LanguageExt.Unit>>,
+        IRequestHandler<Verify, Either<ApiProblemDetails, UserResponse>>
     {
         IUserRepository user;
         IUserTypeRepository userType;
@@ -43,6 +46,20 @@ namespace TaAssistant.Service.V1
                 select LanguageExt.Unit.Default
                 );
 
+        public async Task<Either<ApiProblemDetails, UserResponse>> Handle(Verify request, CancellationToken cancellationToken) =>
+            await (
+                from u in Common.MapLeft(() => user.GetFullUser(request.verify.Email)).ToAsync()
+                from _ in Common.MapLeft(() => verifyEmail(request.verify.VerificationCode, u.VerificationCode, u.VerificationExpiration)).ToAsync()
+                from ut in Common.MapLeft(() => userType.GetUserTypes()).ToAsync()
+                select new UserResponse
+                {
+                    Email = u.Email,
+                    FamilyName = u.FamilyName,
+                    GivenName = u.GivenName,
+                    UserTypeId = u.UserTypeId,
+                    UserType = ut.FirstOrDefault(e => e.UserTypeId == u.UserTypeId)?.Type ?? string.Empty
+                });
+
         public async Task<Either<Error, LanguageExt.Unit>> SendEmail(string verificationCode, string reciepentAddress)
         {
             var emailClient = new EmailClient(configuration.EmailConnectionString);
@@ -65,6 +82,11 @@ namespace TaAssistant.Service.V1
                 message);
             return LanguageExt.Unit.Default;
         }
+
+        private Either<Error, LanguageExt.Unit> verifyEmail(string suppliedVerificationCode, string storedVerificationCode, DateTimeOffset verificationExpiration) =>
+            suppliedVerificationCode == storedVerificationCode && verificationExpiration > DateTimeOffset.UtcNow ?
+                LanguageExt.Unit.Default :
+            Error.Create(ErrorSource.UserHandler, System.Net.HttpStatusCode.BadRequest, "Verification code does not match or expired.");
 
         private Either<Error, LanguageExt.Unit> validateUserType(IEnumerable<UserTypeEntity> userTypes, int userTypeId) =>
             userTypes.Any(ut => ut.UserTypeId == userTypeId) ? 

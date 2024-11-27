@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TaAssistant.Model.Api;
 using TaAssistant.Model.Api.Requests;
+using TaAssistant.Model.Api.Responses;
 using TaAssistant.Service.V1;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 
@@ -53,6 +54,17 @@ namespace Api.TaAssistant.Controllers.V1
         [ProducesResponseType(Status200OK, Type = typeof(ApiProblemDetails))] // TODO: FIX
         public async Task<IActionResult> SignInUsr([FromBody] SignInRequest request) =>
             Respond(await mediator.Send(new SignIn(request)));
+
+        /// <summary>
+        /// Action to verify the user.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("verify")]
+        [SwaggerOperation("An action to sign in a user")]
+        [ProducesResponseType(Status200OK, Type = typeof(UserResponse))]
+        public async Task<IActionResult> VerifyUser([FromBody] VerifyRequest request) =>
+            Respond(await mediator.Send(new Verify(request)));
 
     }
 }

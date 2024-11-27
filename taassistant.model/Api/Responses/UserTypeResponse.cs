@@ -1,4 +1,4 @@
-﻿namespace TaAssistant.Model.Api
+﻿namespace TaAssistant.Model.Api.Responses
 {
     public class UserTypeResponse
     {
