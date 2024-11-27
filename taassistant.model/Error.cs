@@ -93,13 +93,21 @@ namespace TaAssistant.Model
         /// </summary>
         Unspecified,
         /// <summary>
+        /// An error stemming from the TaAssistantAPI.
+        /// </summary>
+        TaAssistantApi,
+        /// <summary>
         /// An error stemming from the UserTypeRepository.
         /// </summary>
         UserTypeRepository,
         /// <summary>
         /// An error stemming from the USerRepository.
         /// </summary>
-        UserRepository
+        UserRepository,
+        /// <summary>
+        /// An error stemming from the UserHandler.
+        /// </summary>
+        UserHandler,
     }
 
     /// <summary>

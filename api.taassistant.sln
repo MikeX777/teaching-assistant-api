@@ -18,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		data\scripts\seed.sql = data\scripts\seed.sql
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taassistant.interfaces", "..\taassistant.interfaces\taassistant.interfaces.csproj", "{08888ED9-F867-4D29-A97A-C3A648C9915E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "taassistant.interfaces", "taassistant.interfaces\taassistant.interfaces.csproj", "{08888ED9-F867-4D29-A97A-C3A648C9915E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

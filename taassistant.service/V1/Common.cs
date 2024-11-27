@@ -32,7 +32,7 @@ namespace TaAssistant.Service.V1
         internal static ApiProblemDetails ToSystemErrorProblemsDetails(
             this Exception exception,
             ErrorCode errorCode = ErrorCode.Unspecified,
-            ErrorSource errorSource = ErrorSource.OchlocracyAPI,
+            ErrorSource errorSource = ErrorSource.TaAssistantApi,
             ErrorType errorType = ErrorType.System) =>
             ApiProblemDetails.Create(INTERNAL_SERVER_ERROR_TITLE, Status500InternalServerError, exception.Message, errorSource, errorType, errorCode,
                 string.Empty);

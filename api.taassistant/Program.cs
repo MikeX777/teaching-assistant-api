@@ -108,7 +108,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddProblemDetails(options => ConfigureProblemDetails(options, application.Name, builder.Environment.EnvironmentName, Log.Logger, ErrorSource.OchlocracyAPI));
+builder.Services.AddProblemDetails(options => ConfigureProblemDetails(options, application.Name, builder.Environment.EnvironmentName, Log.Logger, ErrorSource.TaAssistantApi));
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -191,13 +191,21 @@ app.Run();
 void ConfigureContainer(ContainerBuilder containerBuilder)
 {
     Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
-    var connectionString =
-        "User ID=postgres;Password=password;Server=host.docker.internal;Port=8007;Database=postgres;Pooling=true;";
+    var connectionString = application.DefaultConnectionString;
+    //var connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING");
+    //var connectionString = configuration.GetValue<string>("default-c2807");
+    Log.Error(connectionString);
     containerBuilder.RegisterInstance(application);
+    containerBuilder.RegisterInstance(new Configuration
+    {
+        EmailConnectionString = application.EmailConnectionString,
+        Pepper = application.Pepper,
+    });
     containerBuilder.RegisterInstance(Log.Logger);
     containerBuilder.Register((_, _) => new NpgsqlConnection(connectionString)).As<IDbConnection>()
         .InstancePerLifetimeScope();
     containerBuilder.Register<IUserTypeRepository>((c, _) => new UserTypeRepository(c.Resolve<IDbConnection>()));
+    containerBuilder.Register<IUserRepository>((c, _) => new UserRepository(c.Resolve<IDbConnection>()));
 
 }
 
