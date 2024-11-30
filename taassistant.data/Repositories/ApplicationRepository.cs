@@ -18,8 +18,8 @@ namespace TaAssistant.Data.Repositories
         public async Task<Either<Error, IEnumerable<ApplicationStatusEntity>>> GetApplicationStatuses() =>
             await TryFuncCatchExceptionAsync(async () => await connection.QueryAsync<ApplicationStatusEntity>(
                 """
-                    SELECT as.application_status_id, as.status
-                    FROM application_statuses as
+                    SELECT a_s.application_status_id, a_s.status
+                    FROM application_statuses a_s
                 """),
                 mapError: (ex) => Error.Create(ErrorSource.ApplicationRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
 
@@ -44,7 +44,7 @@ namespace TaAssistant.Data.Repositories
                     {
                         userId = request.UserId,
                         termId = request.TermId,
-                        applicationStatusId = request.ApplicationStatusId,
+                        applicationStatusId = 1,
                         year = request.Year,
                         previousTA = request.PreviousTA
                     });

@@ -206,6 +206,7 @@ void ConfigureContainer(ContainerBuilder containerBuilder)
         .InstancePerLifetimeScope();
     containerBuilder.Register<IUserTypeRepository>((c, _) => new UserTypeRepository(c.Resolve<IDbConnection>()));
     containerBuilder.Register<IUserRepository>((c, _) => new UserRepository(c.Resolve<IDbConnection>()));
+    containerBuilder.Register<IApplicationRepository>((c, _) => new ApplicationRepository(c.Resolve<IDbConnection>()));
 
 }
 
