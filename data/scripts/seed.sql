@@ -32,11 +32,44 @@ create table messages (
   created_at timestamp default now()
 );
 
+create table terms (
+  term_id serial primary key,
+  term_name varchar (20) not null
+);
+
+create table application_statuses (
+  application_status_id serial primary key,
+  status varchar (20) not null
+);
+
+create table applications (
+  application_id bigserial primary key,
+  user_id bigserial references users (user_id),
+  term_id serial references terms (term_id),
+  application_status_id serial references application_statuses (application_status_id)
+  year int not null,
+  previous_ta boolean not null,
+  instructor_notes text null
+);
+
 insert into user_types (type) values
 ('Admin'),
 ('Teaching Assistant'),
 ('Committee Member'),
 ('Instructor');
+
+insert into terms (type) values
+('Spring'),
+('Summer'),
+('Fall');
+
+insert into application_statuses (status) values
+('Pending'),
+('Approved'),
+('Rejected'),
+('Accepted'),
+('Denied'),
+('Completed');
 
 
 do $$
