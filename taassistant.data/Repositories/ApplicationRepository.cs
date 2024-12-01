@@ -1,5 +1,7 @@
 ﻿using Dapper;
 using LanguageExt;
+using Npgsql;
+using NpgsqlTypes;
 using System.Data;
 using TaAssistant.Interfaces.Repositories;
 using TaAssistant.Model;
@@ -50,6 +52,40 @@ namespace TaAssistant.Data.Repositories
                     });
                 return Unit.Default;
             }, mapError: (ex) => Error.Create(ErrorSource.ApplicationRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
+
+        public async Task<Either<Error, IEnumerable<ApplicationEntity>>> GetUserApplicationsByStatus(int userId, IEnumerable<int> statusIds) =>
+            await TryFuncCatchExceptionAsync(async () =>
+            {
+                //using var cmd = new NpgsqlCommand("""
+                //    SELECT a.application_id, a.user_id, a.term_id, a.application_status_id, a.year, a.previous_ta, a.instructor_notes
+                //            FROM applications a
+                //            WHERE a.user_id = @userId and a.application_status_id IN @statusIds;
+                //    """, connection);
+                //cmd.Parameters.AddWithValue("@statusIds", NpgsqlTypes.NpgsqlDbType.Array, statusIds);
+                //cmd.Parameters.AddWithValue("@userId", NpgsqlTypes.NpgsqlDbType.Integer, userId);
+                //return cmd.ExecuteReaderAsync<ApplicationEntity>();
+                //var statuses = new NpgsqlParameter("@statusIds", NpgsqlDbType.Array | NpgsqlDbType.Box);
+                //statuses.Value = statusIds;
+                //var parameters = new NpgsqlParameter[2]
+                //{
+                //    statuses,
+                //    new NpgsqlParameter("@userId", NpgsqlTypes.NpgsqlDbType.Integer, userId)
+                //};
+                return await connection.QueryAsync<ApplicationEntity>(
+                    """
+                        SELECT a.application_id, a.user_id, a.term_id, a.application_status_id, a.year, a.previous_ta, a.instructor_notes
+                        FROM applications a
+                        WHERE a.user_id = @userId and a.application_status_id IN (1, 2, 4);
+                    """, new
+                    {
+                        userId = userId,
+                        //statusIds = GetIntArray(statusIds),
+                    });
+            },
+                mapError: (ex) => Error.Create(ErrorSource.ApplicationRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
+
+        private string GetIntArray(IEnumerable<int> ints) => 
+            ints.Aggregate("", (a, b) => $"a, b");
 
     }
 }

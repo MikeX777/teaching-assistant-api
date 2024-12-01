@@ -15,7 +15,7 @@ namespace Api.TaAssistant.Controllers.V1
     /// A Controller used to show the basic setup.
     /// </summary>
     /// <remarks>
-    /// Constructor for <see cref="ApplicationController"/>.
+    /// Constructor for <see cref="UserTypesController"/>.
     /// </remarks>
     /// <param name="mediator">The mediator instance used to send commands.</param>
     [ApiController]
@@ -29,42 +29,42 @@ namespace Api.TaAssistant.Controllers.V1
     [ProducesResponseType(Status500InternalServerError, Type = typeof(ApiProblemDetails))]
     [Consumes("application/json")]
     [Produces("application/json")]
-    public class ApplicationController(IMediator mediator) : RespondController
+    public class UsersController(IMediator mediator) : RespondController
     {
         private readonly IMediator mediator = mediator;
 
-
         /// <summary>
-        /// Submits an application.
+        /// Action to create a new user
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost("submit")]
-        [SwaggerOperation("Submits an Application")]
-        [ProducesResponseType(Status200OK, Type = typeof(LanguageExt.Unit))]
-        public async Task<IActionResult> SubmitApplication([FromBody] SubmitApplicationRequest request) =>
-            Respond(await mediator.Send(new SubmitApplication(request)));
+        [HttpPost("create")]
+        [SwaggerOperation("An action to create a user")]
+        [ProducesResponseType(Status200OK, Type = typeof(ApiProblemDetails))] // TODO: FIX
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request) =>
+            Respond(await mediator.Send(new CreateUser(request)));
 
         /// <summary>
-        /// Gets the possible terms for an application.
+        /// Action to sign in a user
         /// </summary>
+        /// <param name="request"></param>
         /// <returns></returns>
-        [HttpGet("terms")]
-        [SwaggerOperation("Get the different term types.")]
-        [ProducesResponseType(Status200OK, Type = typeof(IEnumerable<TermResponse>))]
-        public async Task<IActionResult> GetTerms() =>
-            Respond(await mediator.Send(new GetTerms()));
+        [HttpPost("signin")]
+        [SwaggerOperation("An action to sign in a user")]
+        [ProducesResponseType(Status200OK, Type = typeof(ApiProblemDetails))] // TODO: FIX
+        public async Task<IActionResult> SignInUsr([FromBody] SignInRequest request) =>
+            Respond(await mediator.Send(new SignIn(request)));
 
         /// <summary>
-        /// Gets the possible statuses for an application.
+        /// Action to verify the user.
         /// </summary>
+        /// <param name="request"></param>
         /// <returns></returns>
-        [HttpGet("statuses")]
-        [SwaggerOperation("Get the different application status.")]
-        [ProducesResponseType(Status200OK, Type = typeof(IEnumerable<ApplicationStatusResponse>))]
-        public async Task<IActionResult> GetApplicationStatus() =>
-            Respond(await mediator.Send(new GetApplicationStatuses()));
-
+        [HttpPost("verify")]
+        [SwaggerOperation("An action to sign in a user")]
+        [ProducesResponseType(Status200OK, Type = typeof(Response<UserResponse>))]
+        public async Task<IActionResult> VerifyUser([FromBody] VerifyRequest request) =>
+            Respond(await mediator.Send(new Verify(request)));
 
     }
 }

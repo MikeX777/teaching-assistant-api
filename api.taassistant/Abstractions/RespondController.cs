@@ -19,7 +19,11 @@ namespace Api.TaAssistant.Abstractions
         /// <returns>An <see cref="IActionResult"/>.</returns>
         protected IActionResult Respond<TO>(Either<ApiProblemDetails, TO> either, Func<TO, IActionResult>? mapRight = null) =>
             either.Match(
-                Right: r => mapRight == null ? Ok(r) : mapRight(r),
+                Right: r => mapRight == null ? Ok(new Response<TO>
+                {
+                    Success = true,
+                    Data = r
+                }) : mapRight(r),
                 Left: e =>
                     e.Status switch
                     {
