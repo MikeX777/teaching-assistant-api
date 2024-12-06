@@ -11,13 +11,15 @@ namespace TaAssistant.Service.V1
     public record GetTerms() : IRequest<Either<ApiProblemDetails, IEnumerable<TermResponse>>> { }
     public record GetApplicationStatuses() : IRequest<Either<ApiProblemDetails, IEnumerable<ApplicationStatusResponse>>> { }
     public record SubmitApplication(SubmitApplicationRequest Request) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
+    public record SubmitApplicationWithCourses(SubmitApplicationWithCoursesRequest Request) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
     public record GetUpcomingApplications(int UserId) : IRequest<Either<ApiProblemDetails, IEnumerable<ApplicationResponse>>> { }
 
     public class ApplicationHandler :
         IRequestHandler<GetTerms, Either<ApiProblemDetails, IEnumerable<TermResponse>>>,
         IRequestHandler<GetApplicationStatuses, Either<ApiProblemDetails, IEnumerable<ApplicationStatusResponse>>>,
         IRequestHandler<SubmitApplication, Either<ApiProblemDetails, LanguageExt.Unit>>,
-        IRequestHandler<GetUpcomingApplications, Either<ApiProblemDetails, IEnumerable<ApplicationResponse>>>
+        IRequestHandler<GetUpcomingApplications, Either<ApiProblemDetails, IEnumerable<ApplicationResponse>>>,
+        IRequestHandler<SubmitApplicationWithCourses, Either<ApiProblemDetails, LanguageExt.Unit>>
     {
         IApplicationRepository application;
 
@@ -46,6 +48,11 @@ namespace TaAssistant.Service.V1
                     TermId = e.TermId,
                     TermName = e.TermName,
                 }));
+
+        public async Task<Either<ApiProblemDetails, LanguageExt.Unit>> Handle(SubmitApplicationWithCourses request, CancellationToken cancellationToken) =>
+            await (
+                from s in Common.MapLeft(() => application.SubmitApplicationWithCourses(request.Request))
+                select s);
 
         public async Task<Either<ApiProblemDetails, IEnumerable<ApplicationResponse>>> Handle(GetUpcomingApplications request, CancellationToken cancellationToekn) =>
             await (

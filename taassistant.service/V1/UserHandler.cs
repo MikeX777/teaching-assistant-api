@@ -2,6 +2,8 @@
 using Azure.Communication.Email;
 using LanguageExt;
 using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 using System.Security.Cryptography;
 using System.Text;
@@ -14,30 +16,33 @@ using TaAssistant.Model.Entities;
 
 namespace TaAssistant.Service.V1
 {
-    public record CreateUser(CreateUserRequest User) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
+    public record CreateUser(CreateUserRequest User) : IRequest<Either<ApiProblemDetails, CreateUserResponse>> { }
     public record SignIn(SignInRequest signIn) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
     public record Verify(VerifyRequest verify) : IRequest<Either<ApiProblemDetails, UserResponse>> { }
+    public record UploadCVForUser(int UserId, IFormFile CV) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
 
     public class UserHandler :
-        IRequestHandler<CreateUser, Either<ApiProblemDetails, LanguageExt.Unit>>,
+        IRequestHandler<CreateUser, Either<ApiProblemDetails, CreateUserResponse>>,
         IRequestHandler<SignIn, Either<ApiProblemDetails, LanguageExt.Unit>>,
-        IRequestHandler<Verify, Either<ApiProblemDetails, UserResponse>>
+        IRequestHandler<Verify, Either<ApiProblemDetails, UserResponse>>,
+        IRequestHandler<UploadCVForUser, Either<ApiProblemDetails, LanguageExt.Unit>>
     {
         ILogger log;
         IUserRepository user;
         IUserTypeRepository userType;
         Configuration configuration;
+        CloudBlobContainer blob;
    
-        public UserHandler(ILogger log, IUserRepository user, IUserTypeRepository userType, Configuration configuration) =>
-            (this.log, this.user, this.userType, this.configuration) = (log, user, userType, configuration);
+        public UserHandler(ILogger log, IUserRepository user, IUserTypeRepository userType, Configuration configuration, CloudBlobContainer blob) =>
+            (this.log, this.user, this.userType, this.configuration, this.blob) = (log, user, userType, configuration, blob);
 
-        public async Task<Either<ApiProblemDetails, LanguageExt.Unit>> Handle(CreateUser request, CancellationToken cancellationToken) =>
+        public async Task<Either<ApiProblemDetails, CreateUserResponse>> Handle(CreateUser request, CancellationToken cancellationToken) =>
             await (
                 from ut in Common.MapLeft(() => userType.GetUserTypes()).ToAsync()
                 from _ in Common.MapLeft(() => validateUserType(ut, request.User.UserTypeId)).ToAsync()
                 from r in Common.MapLeft(() => updatePassword(request.User)).ToAsync()
                 from u in Common.MapLeft(() => user.CreateUser(request.User, r.Item2)).ToAsync()
-                select LanguageExt.Unit.Default
+                select new CreateUserResponse { UserId = u}
             );
 
         public async Task<Either<ApiProblemDetails, LanguageExt.Unit>> Handle(SignIn request, CancellationToken cancellationToken) =>
@@ -85,6 +90,25 @@ namespace TaAssistant.Service.V1
                 WaitUntil.Completed,
                 message);
             return LanguageExt.Unit.Default;
+        }
+
+        public async Task<Either<ApiProblemDetails, LanguageExt.Unit>> Handle(UploadCVForUser request, CancellationToken cancellationToken)
+        {
+            try
+            {
+
+                CloudBlockBlob blockBlob = blob.GetBlockBlobReference($"cvs/{request.UserId}/cv{Path.GetExtension(request.CV.FileName)}");
+                using (var stream = request.CV.OpenReadStream())
+                {
+                    await blockBlob.UploadFromStreamAsync(stream);
+                }
+                return LanguageExt.Unit.Default;
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+                return ApiProblemDetails.Create("Unable to upload file", 500, ex.Message);
+            }
         }
 
         private Either<Error, LanguageExt.Unit> verifyEmail(string suppliedVerificationCode, string storedVerificationCode, DateTimeOffset verificationExpiration) =>

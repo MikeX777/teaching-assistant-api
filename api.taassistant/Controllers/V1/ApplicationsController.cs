@@ -45,6 +45,12 @@ namespace Api.TaAssistant.Controllers.V1
         public async Task<IActionResult> SubmitApplication([FromBody] SubmitApplicationRequest request) =>
             Respond(await mediator.Send(new SubmitApplication(request)));
 
+        [HttpPost("submit-with-courses")]
+        [SwaggerOperation("Submits an application with the courses")]
+        [ProducesResponseType(Status200OK, Type = typeof(Response<LanguageExt.Unit>))]
+        public async Task<IActionResult> SubmitApplicationWithCourses([FromBody] SubmitApplicationWithCoursesRequest request) =>
+            Respond(await mediator.Send(new SubmitApplicationWithCourses(request)));
+
         /// <summary>
         /// Gets the possible terms for an application.
         /// </summary>

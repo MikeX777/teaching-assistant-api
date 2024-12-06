@@ -53,6 +53,44 @@ namespace TaAssistant.Data.Repositories
                 return Unit.Default;
             }, mapError: (ex) => Error.Create(ErrorSource.ApplicationRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
 
+        public async Task<Either<Error, Unit>> SubmitApplicationWithCourses(SubmitApplicationWithCoursesRequest request) => 
+            await TryFuncCatchExceptionAsync(async () =>
+            {
+                var applicationId = await connection.QuerySingleAsync<int>(
+                    """
+                        INSERT INTO applications
+                            (user_id, term_id, application_status_id, year, previous_ta)
+                        VALUES
+                            (@userId, @termId, @applicationStatusId, @year, @previousTA)
+                        RETURNING application_id;
+                    """, new
+                    {
+                        userId = request.UserId,
+                        termId = request.TermId,
+                        applicationStatusId = 1,
+                        year = request.Year,
+                        previousTA = request.PreviousTA
+                    });
+
+                await connection.ExecuteAsync(
+                    """
+                        INSERT INTO application_courses
+                            (user_id, course_id, term_id, year, grade_id, application_id, recommended)
+                        VALUES
+                            (@userId, @courseId, @termId, @year, @gradeId, @applicationId, @recommended)
+                    """, request.Courses.Select(c => new
+                    {
+                        userId = request.UserId,
+                        courseId = c.CourseId,
+                        termId = c.TermId,
+                        year = c.Year,
+                        gradeId = c.GradeId,
+                        applicationId = applicationId,
+                        recommended = false
+                    }));
+                return Unit.Default;
+            }, mapError: (ex) => Error.Create(ErrorSource.ApplicationRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
+
         public async Task<Either<Error, IEnumerable<ApplicationEntity>>> GetUserApplicationsByStatus(int userId, IEnumerable<int> statusIds) =>
             await TryFuncCatchExceptionAsync(async () =>
             {

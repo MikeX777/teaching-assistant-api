@@ -16,14 +16,15 @@ namespace TaAssistant.Data.Repositories
 
         public UserRepository(IDbConnection connection) => this.connection = connection;
 
-        public async Task<Either<Error, Unit>> CreateUser(CreateUserRequest request, string passwordSalt) =>
+        public async Task<Either<Error, int>> CreateUser(CreateUserRequest request, string passwordSalt) =>
             await TryFuncCatchExceptionAsync(async () => {
-                await connection.ExecuteAsync(
+                var userId = await connection.QuerySingleAsync<int>(
                     """
                 INSERT INTO users
                     (email, given_name, family_name, phone_number, password, password_salt, pending, user_type_id, created_at)
                     VALUES
-                    (@email, @givenName, @familyName, @phoneNumber, @password, @passwordSalt, @pending, @userTypeId, @createdAt);
+                    (@email, @givenName, @familyName, @phoneNumber, @password, @passwordSalt, @pending, @userTypeId, @createdAt)
+                    RETURNING user_id;
                 """, new
                     {
                         email = request.Email,
@@ -36,7 +37,7 @@ namespace TaAssistant.Data.Repositories
                         userTypeId = request.UserTypeId,
                         createdAt = DateTimeOffset.UtcNow,
                     });
-                return LanguageExt.Unit.Default;
+                return userId;
                 },
                  mapError: (ex) => Error.Create(ErrorSource.UserTypeRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
 

@@ -8,6 +8,8 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hellang.Middleware.ProblemDetails;
 using Microsoft.OpenApi.Models;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Npgsql;
 using Serilog;
 using Serilog.Events;
@@ -51,7 +53,7 @@ builder.Logging.AddSerilog();
 builder.Services.AddLazyCache();
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssemblies([typeof(ValidationBehavior<,>).Assembly, typeof(DummyHandler).Assembly,]);
+    cfg.RegisterServicesFromAssemblies([typeof(ValidationBehavior<,>).Assembly, typeof(UserHandler).Assembly,]);
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 builder.Services
@@ -204,9 +206,19 @@ void ConfigureContainer(ContainerBuilder containerBuilder)
     containerBuilder.RegisterInstance(Log.Logger);
     containerBuilder.Register((_, _) => new NpgsqlConnection(connectionString)).As<IDbConnection>()
         .InstancePerLifetimeScope();
+
+    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(application.StorageConnectionString);
+    CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+    CloudBlobContainer container = blobClient.GetContainerReference("taassistant");
+
+    containerBuilder.RegisterInstance(blobClient);
+    containerBuilder.RegisterInstance(container);
+
+
     containerBuilder.Register<IUserTypeRepository>((c, _) => new UserTypeRepository(c.Resolve<IDbConnection>()));
     containerBuilder.Register<IUserRepository>((c, _) => new UserRepository(c.Resolve<IDbConnection>()));
     containerBuilder.Register<IApplicationRepository>((c, _) => new ApplicationRepository(c.Resolve<IDbConnection>()));
+    containerBuilder.Register<ICourseRepository>((c, _) => new CourseRepository(c.Resolve<IDbConnection>()));
 
 }
 

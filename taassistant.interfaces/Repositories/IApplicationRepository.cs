@@ -11,5 +11,6 @@ namespace TaAssistant.Interfaces.Repositories
         Task<Either<Error, IEnumerable<ApplicationStatusEntity>>> GetApplicationStatuses();
         Task<Either<Error, Unit>> SubmitApplication(SubmitApplicationRequest request);
         Task<Either<Error, IEnumerable<ApplicationEntity>>> GetUserApplicationsByStatus(int userId, IEnumerable<int> statusIds);
+        Task<Either<Error, Unit>> SubmitApplicationWithCourses(SubmitApplicationWithCoursesRequest request);
     }
 }

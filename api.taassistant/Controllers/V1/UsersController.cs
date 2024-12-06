@@ -66,5 +66,18 @@ namespace Api.TaAssistant.Controllers.V1
         public async Task<IActionResult> VerifyUser([FromBody] VerifyRequest request) =>
             Respond(await mediator.Send(new Verify(request)));
 
+        /// <summary>
+        /// Uploads a CV for the user
+        /// </summary>
+        /// <param name="userId">The user to upload the cv for.</param>
+        /// <param name="cv">The cv.</param>
+        /// <returns></returns>
+        [HttpPost("{userId}/cv")]
+        [SwaggerOperation("Upload a CV")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(Status200OK, Type = typeof(Response<LanguageExt.Unit>))]
+        public async Task<IActionResult> UploadCV([FromRoute] int userId, IFormFile cv) =>
+            Respond(await mediator.Send(new UploadCVForUser(userId, cv)));
+
     }
 }

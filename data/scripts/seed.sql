@@ -56,6 +56,46 @@ create table applications (
   instructor_notes text null
 );
 
+create table courses (
+  course_id serial primary key,
+  prefix varchar(10) not null,
+  code varchar(10) not null,
+  require_ta boolean not null
+);
+
+create table grades (
+  grade_id serial primary key,
+  grade varchar (2) not null
+);
+
+create table application_courses (
+  application_course_id bigserial primary key,
+  user_id bigserial references users (user_id),
+  course_id serial references courses (course_id),
+  term_id serial references terms (term_id),
+  year int not null,
+  grade_id serial references grades (grade_id),
+  application_id bigserial references applications (application_id),
+  recommended boolean not null,
+  selected boolean not null default FALSE
+);
+
+insert into grades (grade) values
+('A'),
+('B+'),
+('B'),
+('B-'),
+('C+'),
+('C'),
+('C-'),
+('F');
+
+insert into courses (prefix, code, require_ta) values
+('CEN', '5035', TRUE),
+('STA', '4821', TRUE),
+('COP', '6778', TRUE); 
+  
+
 insert into user_types (type) values
 ('Admin'),
 ('Teaching Assistant'),
