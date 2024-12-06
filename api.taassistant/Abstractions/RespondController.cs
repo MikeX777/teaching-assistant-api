@@ -27,8 +27,16 @@ namespace Api.TaAssistant.Abstractions
                 Left: e =>
                     e.Status switch
                     {
-                        400 => BadRequest(e),
-                        404 => NotFound(e),
+                        400 => BadRequest(new Response<ApiProblemDetails>
+                        {
+                            Success = false,
+                            Data = e
+                        }),
+                        404 => NotFound(new Response<ApiProblemDetails>
+                        {
+                            Success = false,
+                            Data = e
+                        }),
                         503 => StatusCode(Status503ServiceUnavailable, e),
                         _ => StatusCode(Status500InternalServerError, e),
                     });

@@ -2,6 +2,7 @@
 using Azure.Communication.Email;
 using LanguageExt;
 using MediatR;
+using Serilog;
 using System.Security.Cryptography;
 using System.Text;
 using TaAssistant.Interfaces.Repositories;
@@ -22,19 +23,20 @@ namespace TaAssistant.Service.V1
         IRequestHandler<SignIn, Either<ApiProblemDetails, LanguageExt.Unit>>,
         IRequestHandler<Verify, Either<ApiProblemDetails, UserResponse>>
     {
+        ILogger log;
         IUserRepository user;
         IUserTypeRepository userType;
         Configuration configuration;
    
-        public UserHandler(IUserRepository user, IUserTypeRepository userType, Configuration configuration) =>
-            (this.user, this.userType, this.configuration) = (user, userType, configuration);
+        public UserHandler(ILogger log, IUserRepository user, IUserTypeRepository userType, Configuration configuration) =>
+            (this.log, this.user, this.userType, this.configuration) = (log, user, userType, configuration);
 
         public async Task<Either<ApiProblemDetails, LanguageExt.Unit>> Handle(CreateUser request, CancellationToken cancellationToken) =>
             await (
                 from ut in Common.MapLeft(() => userType.GetUserTypes()).ToAsync()
                 from _ in Common.MapLeft(() => validateUserType(ut, request.User.UserTypeId)).ToAsync()
                 from r in Common.MapLeft(() => updatePassword(request.User)).ToAsync()
-                from u in Common.MapLeft(() => user.CreateUser(request.User)).ToAsync()
+                from u in Common.MapLeft(() => user.CreateUser(request.User, r.Item2)).ToAsync()
                 select LanguageExt.Unit.Default
             );
 
@@ -53,7 +55,9 @@ namespace TaAssistant.Service.V1
                 from ut in Common.MapLeft(() => userType.GetUserTypes()).ToAsync()
                 select new UserResponse
                 {
+                    UserId = u.UserId,
                     Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
                     FamilyName = u.FamilyName,
                     GivenName = u.GivenName,
                     UserTypeId = u.UserTypeId,
@@ -97,12 +101,12 @@ namespace TaAssistant.Service.V1
                     "User Type does not exist",
                     ErrorType.Validation);
 
-        private Either<Error, CreateUserRequest> updatePassword(CreateUserRequest request)
+        private Either<Error, (CreateUserRequest, string)> updatePassword(CreateUserRequest request)
         {
             var saltData = RandomNumberGenerator.GetBytes(64);
-            request.PasswordSalt = Convert.ToBase64String(saltData);
-            request.Password = createPasswordHash(request.Password, request.PasswordSalt, configuration.Pepper);
-            return request;
+            var salt = Convert.ToBase64String(saltData);
+            request.Password = createPasswordHash(request.Password, salt, configuration.Pepper);
+            return (request, salt);
 
         }
 

@@ -10,9 +10,13 @@ create table users (
   email varchar(320) not null,
   given_name varchar(50) not null,
   family_name varchar(50) not null,
+  phone_number varchar(25) not null,
   password varchar(320) not null,
   password_salt varchar(320) not null,
-  cv_name varchar(320) not null,
+  verification_code varchar(25) null,
+  verification_expiration timestamp null,
+  cv_name varchar(320) null,
+  pending boolean not null,
   user_type_id serial references user_types (user_type_id),
   created_at timestamp default now()
 );
@@ -46,7 +50,7 @@ create table applications (
   application_id bigserial primary key,
   user_id bigserial references users (user_id),
   term_id serial references terms (term_id),
-  application_status_id serial references application_statuses (application_status_id)
+  application_status_id serial references application_statuses (application_status_id),
   year int not null,
   previous_ta boolean not null,
   instructor_notes text null

@@ -16,21 +16,22 @@ namespace TaAssistant.Data.Repositories
 
         public UserRepository(IDbConnection connection) => this.connection = connection;
 
-        public async Task<Either<Error, Unit>> CreateUser(CreateUserRequest request) =>
+        public async Task<Either<Error, Unit>> CreateUser(CreateUserRequest request, string passwordSalt) =>
             await TryFuncCatchExceptionAsync(async () => {
                 await connection.ExecuteAsync(
                     """
                 INSERT INTO users
-                    (email, given_name, family_name, password, password_salt, pending, user_type_id, created_at)
+                    (email, given_name, family_name, phone_number, password, password_salt, pending, user_type_id, created_at)
                     VALUES
-                    (@email, @givenName, @familyName, @password, @passwordSalt, @pending, @userTypeId, @createdAt);
+                    (@email, @givenName, @familyName, @phoneNumber, @password, @passwordSalt, @pending, @userTypeId, @createdAt);
                 """, new
                     {
                         email = request.Email,
                         givenName = request.GivenName,
                         familyName = request.FamilyName,
+                        phoneNumber = request.PhoneNumber,
                         password = request.Password,
-                        passwordSalt = request.PasswordSalt,
+                        passwordSalt = passwordSalt,
                         pending = true,
                         userTypeId = request.UserTypeId,
                         createdAt = DateTimeOffset.UtcNow,
@@ -40,13 +41,24 @@ namespace TaAssistant.Data.Repositories
                  mapError: (ex) => Error.Create(ErrorSource.UserTypeRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
 
         public async Task<Either<Error, FullUserEntity>> GetFullUser(string email) =>
-            await TryFuncCatchExceptionAsync(async () => await connection.QuerySingleAsync<FullUserEntity>(
-                """
-                SELECT u.user_id, u.email, u.given_name, u.family_name, u.password, u.password_salt, u.pending, u.user_type_id, u.verification_code, u.verification_expiration, u.created_at
-                FROM users AS u
-                WHERE u.email = @email
-                """, new { email = email }),
-                mapError: (ex) => Error.Create(ErrorSource.UserTypeRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
+            await TryFuncCatchExceptionAsync<FullUserEntity>(async () =>
+            {
+                var user = await connection.QuerySingleOrDefaultAsync<FullUserEntity?>(
+                    """
+                    SELECT u.user_id, u.email, u.given_name, u.family_name, u.phone_number, u.password, u.password_salt, u.pending, u.user_type_id, u.verification_code, u.verification_expiration, u.created_at
+                    FROM users AS u
+                    WHERE u.email = @email
+                    """, new { email = email });
+                if (user == null)
+                {
+                    return Error.Create(ErrorSource.UserRepository, System.Net.HttpStatusCode.BadRequest, "Error Logging In");
+                }
+                else
+                {
+                    return user;
+                }
+            },
+            mapError: (ex) => Error.Create(ErrorSource.UserTypeRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
 
         public Task<Either<Error, UserEntity>> Login(LoginRequest request)
         {
@@ -54,13 +66,17 @@ namespace TaAssistant.Data.Repositories
         }
 
         public async Task<Either<Error, string>> SignIn(string email, string passwordHash) =>
-            await TryFuncCatchExceptionAsync(async () =>
+            await TryFuncCatchExceptionAsync<string>(async () =>
             {
-                var userId = await connection.QuerySingleAsync<int>("SELECT u.user_id FROM users AS u WHERE u.email = @email AND u.password = @passwordHash",
+                var userId = await connection.QueryFirstOrDefaultAsync<int?>("SELECT u.user_id FROM users AS u WHERE u.email = @email AND u.password = @passwordHash",
                     new { email = email, passwordHash = passwordHash });
+                if (!userId.HasValue || userId == 0)
+                {
+                    return Error.Create(ErrorSource.UserRepository, System.Net.HttpStatusCode.BadRequest, "Error Logging In");
+                }
                 var verificationCode = RandomString(8);
-                await connection.ExecuteAsync("UPDATE users  SET verification_code = @verificationCode, verification_expiration = @verificationExpiration WHERE user_id = @userId",
-                    new { userId = userId, verificationCode = verificationCode, verificationExpiration = DateTimeOffset.UtcNow.AddMinutes(15) });
+                await connection.ExecuteAsync("UPDATE users SET verification_code = @verificationCode, verification_expiration = @verificationExpiration WHERE user_id = @userId",
+                    new { userId = userId.Value, verificationCode = verificationCode, verificationExpiration = DateTimeOffset.UtcNow.AddMinutes(15) });
                 return verificationCode;
             },
             mapError: (ex) => Error.Create(ErrorSource.UserTypeRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
