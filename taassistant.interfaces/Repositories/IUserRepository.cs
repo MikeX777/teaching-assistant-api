@@ -12,5 +12,6 @@ namespace TaAssistant.Interfaces.Repositories
         Task<Either<Error, FullUserEntity>> GetFullUser(string email);
         Task<Either<Error, string>> SignIn(string email, string passwordHash);
         Task<Either<Error, UserEntity>> Login(LoginRequest request);
+        Task<Either<Error, Unit>> UserDoesNotExist(string email);
     }
 }

@@ -38,8 +38,9 @@ namespace TaAssistant.Service.V1
 
         public async Task<Either<ApiProblemDetails, CreateUserResponse>> Handle(CreateUser request, CancellationToken cancellationToken) =>
             await (
+                from _1 in Common.MapLeft(() => user.UserDoesNotExist(request.User.Email)).ToAsync()
                 from ut in Common.MapLeft(() => userType.GetUserTypes()).ToAsync()
-                from _ in Common.MapLeft(() => validateUserType(ut, request.User.UserTypeId)).ToAsync()
+                from _2 in Common.MapLeft(() => validateUserType(ut, request.User.UserTypeId)).ToAsync()
                 from r in Common.MapLeft(() => updatePassword(request.User)).ToAsync()
                 from u in Common.MapLeft(() => user.CreateUser(request.User, r.Item2)).ToAsync()
                 select new CreateUserResponse { UserId = u}

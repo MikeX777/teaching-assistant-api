@@ -41,6 +41,25 @@ namespace TaAssistant.Data.Repositories
                 },
                  mapError: (ex) => Error.Create(ErrorSource.UserTypeRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
 
+        public async Task<Either<Error, Unit>> UserDoesNotExist(string email) =>
+            await TryFuncCatchExceptionAsync<Unit>(async () =>
+            {
+                var userId = await connection.QuerySingleOrDefaultAsync<int?>(
+                    """
+                        SELECT u.user_id FROM users AS u WHERE u.email = @email
+                    """, new { email = email });
+
+                if (userId == null)
+                {
+                    return Unit.Default;
+                }
+                else
+                {
+                    return Error.Create(ErrorSource.UserRepository, System.Net.HttpStatusCode.BadRequest, "User already exists.");
+                }
+            },
+            mapError: (ex) => Error.Create(ErrorSource.UserTypeRepository, System.Net.HttpStatusCode.InternalServerError, ex.Message));
+
         public async Task<Either<Error, FullUserEntity>> GetFullUser(string email) =>
             await TryFuncCatchExceptionAsync<FullUserEntity>(async () =>
             {
