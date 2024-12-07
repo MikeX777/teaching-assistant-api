@@ -17,6 +17,7 @@
         public string DefaultConnectionString { get; set; } = configuration.GetValue<string>("default-c2807") ?? string.Empty;
 
         public string EmailConnectionString { get; set; } = configuration.GetValue<string>("emailConnectionString") ?? string.Empty;
+        public string StorageConnectionString { get; set; } = configuration.GetValue<string>("storageConnectionString") ?? string.Empty;
         public string Pepper { get; set; } = configuration.GetValue<string>("pepper") ?? string.Empty;
     }
 }

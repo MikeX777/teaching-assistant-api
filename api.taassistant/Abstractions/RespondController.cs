@@ -19,12 +19,24 @@ namespace Api.TaAssistant.Abstractions
         /// <returns>An <see cref="IActionResult"/>.</returns>
         protected IActionResult Respond<TO>(Either<ApiProblemDetails, TO> either, Func<TO, IActionResult>? mapRight = null) =>
             either.Match(
-                Right: r => mapRight == null ? Ok(r) : mapRight(r),
+                Right: r => mapRight == null ? Ok(new Response<TO>
+                {
+                    Success = true,
+                    Data = r
+                }) : mapRight(r),
                 Left: e =>
                     e.Status switch
                     {
-                        400 => BadRequest(e),
-                        404 => NotFound(e),
+                        400 => BadRequest(new Response<ApiProblemDetails>
+                        {
+                            Success = false,
+                            Data = e
+                        }),
+                        404 => NotFound(new Response<ApiProblemDetails>
+                        {
+                            Success = false,
+                            Data = e
+                        }),
                         503 => StatusCode(Status503ServiceUnavailable, e),
                         _ => StatusCode(Status500InternalServerError, e),
                     });

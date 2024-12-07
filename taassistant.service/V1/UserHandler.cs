@@ -2,6 +2,9 @@
 using Azure.Communication.Email;
 using LanguageExt;
 using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.WindowsAzure.Storage.Blob;
+using Serilog;
 using System.Security.Cryptography;
 using System.Text;
 using TaAssistant.Interfaces.Repositories;
@@ -13,29 +16,33 @@ using TaAssistant.Model.Entities;
 
 namespace TaAssistant.Service.V1
 {
-    public record CreateUser(CreateUserRequest User) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
+    public record CreateUser(CreateUserRequest User) : IRequest<Either<ApiProblemDetails, CreateUserResponse>> { }
     public record SignIn(SignInRequest signIn) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
     public record Verify(VerifyRequest verify) : IRequest<Either<ApiProblemDetails, UserResponse>> { }
+    public record UploadCVForUser(int UserId, IFormFile CV) : IRequest<Either<ApiProblemDetails, LanguageExt.Unit>> { }
 
     public class UserHandler :
-        IRequestHandler<CreateUser, Either<ApiProblemDetails, LanguageExt.Unit>>,
+        IRequestHandler<CreateUser, Either<ApiProblemDetails, CreateUserResponse>>,
         IRequestHandler<SignIn, Either<ApiProblemDetails, LanguageExt.Unit>>,
-        IRequestHandler<Verify, Either<ApiProblemDetails, UserResponse>>
+        IRequestHandler<Verify, Either<ApiProblemDetails, UserResponse>>,
+        IRequestHandler<UploadCVForUser, Either<ApiProblemDetails, LanguageExt.Unit>>
     {
+        ILogger log;
         IUserRepository user;
         IUserTypeRepository userType;
         Configuration configuration;
+        CloudBlobContainer blob;
    
-        public UserHandler(IUserRepository user, IUserTypeRepository userType, Configuration configuration) =>
-            (this.user, this.userType, this.configuration) = (user, userType, configuration);
+        public UserHandler(ILogger log, IUserRepository user, IUserTypeRepository userType, Configuration configuration, CloudBlobContainer blob) =>
+            (this.log, this.user, this.userType, this.configuration, this.blob) = (log, user, userType, configuration, blob);
 
-        public async Task<Either<ApiProblemDetails, LanguageExt.Unit>> Handle(CreateUser request, CancellationToken cancellationToken) =>
+        public async Task<Either<ApiProblemDetails, CreateUserResponse>> Handle(CreateUser request, CancellationToken cancellationToken) =>
             await (
                 from ut in Common.MapLeft(() => userType.GetUserTypes()).ToAsync()
                 from _ in Common.MapLeft(() => validateUserType(ut, request.User.UserTypeId)).ToAsync()
                 from r in Common.MapLeft(() => updatePassword(request.User)).ToAsync()
-                from u in Common.MapLeft(() => user.CreateUser(request.User)).ToAsync()
-                select LanguageExt.Unit.Default
+                from u in Common.MapLeft(() => user.CreateUser(request.User, r.Item2)).ToAsync()
+                select new CreateUserResponse { UserId = u}
             );
 
         public async Task<Either<ApiProblemDetails, LanguageExt.Unit>> Handle(SignIn request, CancellationToken cancellationToken) =>
@@ -53,7 +60,9 @@ namespace TaAssistant.Service.V1
                 from ut in Common.MapLeft(() => userType.GetUserTypes()).ToAsync()
                 select new UserResponse
                 {
+                    UserId = u.UserId,
                     Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
                     FamilyName = u.FamilyName,
                     GivenName = u.GivenName,
                     UserTypeId = u.UserTypeId,
@@ -83,6 +92,25 @@ namespace TaAssistant.Service.V1
             return LanguageExt.Unit.Default;
         }
 
+        public async Task<Either<ApiProblemDetails, LanguageExt.Unit>> Handle(UploadCVForUser request, CancellationToken cancellationToken)
+        {
+            try
+            {
+
+                CloudBlockBlob blockBlob = blob.GetBlockBlobReference($"cvs/{request.UserId}/cv{Path.GetExtension(request.CV.FileName)}");
+                using (var stream = request.CV.OpenReadStream())
+                {
+                    await blockBlob.UploadFromStreamAsync(stream);
+                }
+                return LanguageExt.Unit.Default;
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+                return ApiProblemDetails.Create("Unable to upload file", 500, ex.Message);
+            }
+        }
+
         private Either<Error, LanguageExt.Unit> verifyEmail(string suppliedVerificationCode, string storedVerificationCode, DateTimeOffset verificationExpiration) =>
             suppliedVerificationCode == storedVerificationCode && verificationExpiration > DateTimeOffset.UtcNow ?
                 LanguageExt.Unit.Default :
@@ -97,12 +125,12 @@ namespace TaAssistant.Service.V1
                     "User Type does not exist",
                     ErrorType.Validation);
 
-        private Either<Error, CreateUserRequest> updatePassword(CreateUserRequest request)
+        private Either<Error, (CreateUserRequest, string)> updatePassword(CreateUserRequest request)
         {
             var saltData = RandomNumberGenerator.GetBytes(64);
-            request.PasswordSalt = Convert.ToBase64String(saltData);
-            request.Password = createPasswordHash(request.Password, request.PasswordSalt, configuration.Pepper);
-            return request;
+            var salt = Convert.ToBase64String(saltData);
+            request.Password = createPasswordHash(request.Password, salt, configuration.Pepper);
+            return (request, salt);
 
         }
 

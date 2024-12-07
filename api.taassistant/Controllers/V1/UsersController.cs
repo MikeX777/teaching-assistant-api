@@ -15,7 +15,7 @@ namespace Api.TaAssistant.Controllers.V1
     /// A Controller used to show the basic setup.
     /// </summary>
     /// <remarks>
-    /// Constructor for <see cref="UserTypeController"/>.
+    /// Constructor for <see cref="UserTypesController"/>.
     /// </remarks>
     /// <param name="mediator">The mediator instance used to send commands.</param>
     [ApiController]
@@ -29,7 +29,7 @@ namespace Api.TaAssistant.Controllers.V1
     [ProducesResponseType(Status500InternalServerError, Type = typeof(ApiProblemDetails))]
     [Consumes("application/json")]
     [Produces("application/json")]
-    public class UserController(IMediator mediator) : RespondController
+    public class UsersController(IMediator mediator) : RespondController
     {
         private readonly IMediator mediator = mediator;
 
@@ -62,9 +62,22 @@ namespace Api.TaAssistant.Controllers.V1
         /// <returns></returns>
         [HttpPost("verify")]
         [SwaggerOperation("An action to sign in a user")]
-        [ProducesResponseType(Status200OK, Type = typeof(UserResponse))]
+        [ProducesResponseType(Status200OK, Type = typeof(Response<UserResponse>))]
         public async Task<IActionResult> VerifyUser([FromBody] VerifyRequest request) =>
             Respond(await mediator.Send(new Verify(request)));
+
+        /// <summary>
+        /// Uploads a CV for the user
+        /// </summary>
+        /// <param name="userId">The user to upload the cv for.</param>
+        /// <param name="cv">The cv.</param>
+        /// <returns></returns>
+        [HttpPost("{userId}/cv")]
+        [SwaggerOperation("Upload a CV")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(Status200OK, Type = typeof(Response<LanguageExt.Unit>))]
+        public async Task<IActionResult> UploadCV([FromRoute] int userId, IFormFile cv) =>
+            Respond(await mediator.Send(new UploadCVForUser(userId, cv)));
 
     }
 }

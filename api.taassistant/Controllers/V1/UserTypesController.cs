@@ -14,7 +14,7 @@ namespace Api.TaAssistant.Controllers.V1
     /// A Controller used to show the basic setup.
     /// </summary>
     /// <remarks>
-    /// Constructor for <see cref="UserTypeController"/>.
+    /// Constructor for <see cref="UserTypesController"/>.
     /// </remarks>
     /// <param name="mediator">The mediator instance used to send commands.</param>
     [ApiController]
@@ -28,7 +28,7 @@ namespace Api.TaAssistant.Controllers.V1
     [ProducesResponseType(Status500InternalServerError, Type = typeof(ApiProblemDetails))]
     [Consumes("application/json")]
     [Produces("application/json")]
-    public class UserTypeController(IMediator mediator) : RespondController
+    public class UserTypesController(IMediator mediator) : RespondController
     {
         private readonly IMediator mediator = mediator;
 
@@ -39,7 +39,7 @@ namespace Api.TaAssistant.Controllers.V1
         /// <returns>An <see cref="IEnumerable{UserTypeResponse}"/></returns>
         [HttpGet]
         [SwaggerOperation("A action to get all user types.")]
-        [ProducesResponseType(Status200OK, Type = typeof(IEnumerable<UserTypeResponse>))]
+        [ProducesResponseType(Status200OK, Type = typeof(Response<IEnumerable<UserTypeResponse>>))]
         public async Task<IActionResult> GetDummy() =>
             Respond(await mediator.Send(new GetUserTypes()));
 

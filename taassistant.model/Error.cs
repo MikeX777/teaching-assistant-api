@@ -101,9 +101,17 @@ namespace TaAssistant.Model
         /// </summary>
         UserTypeRepository,
         /// <summary>
-        /// An error stemming from the USerRepository.
+        /// An error stemming from the UserRepository.
         /// </summary>
         UserRepository,
+        /// <summary>
+        /// An error stemming from the ApplicationRepository.
+        /// </summary>
+        ApplicationRepository,
+        /// <summary>
+        /// An error stemming from the CourseRepository.
+        /// </summary>
+        CourseRepository,
         /// <summary>
         /// An error stemming from the UserHandler.
         /// </summary>
