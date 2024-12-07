@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    ports: 
+      - "8007:5432"
+    volumes:
+      - ./data/scripts/:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+#    command: sh -c "psql -p 8005 -U postgres postgres < /tmp/seed.sql"
+
+  api.taassit:
+    image: ${DOCKER_REGISTRY-}apitaassit
+    build:
+      context: .
+      dockerfile: api.taassistant/Dockerfile
+    depends_on:
+      - "db"
+    networks:
+      - db
+    ports:
+      - "8001:8080"
+
+networks:
+  db:
+    driver: bridge
